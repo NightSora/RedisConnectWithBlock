@@ -1,6 +1,10 @@
 #include "redisManager.h"
 #include <string.h>
 #include <set>
+#include <stdarg.h> 
+
+
+#include <sstream> 
 
 #define SUCCESS 0
 #define NIL 1
@@ -13,70 +17,46 @@ public:
 Redis():RedisManager(){};
 ~Redis(){};
 
-int fixKey(const std::string &cmd,const std::string &key);
+int Command(const char* Command);
+int Command(std::vector<string> &Command);
 
 template<class T>
-int insertOne(const std::string &cmd,const std::string &key,T &insert);
+int insert(const char* cmd,const char* key,T &insert);
 
 template<class T>
-int insertSet(const std::string &cmd,const std::string &key,std::set<T> &insert);
+int fetch(const char* cmd,const char* key,T &dst);
 
 template<class T>
-int fetchOne(const std::string &cmd,const std::string &key,T &dst);
+int insert(const char* cmd,const char* key,std::vector<T> &insert);
 
 template<class T>
-int fetchSet(const std::string &cmd,const std::string &key,std::set<T> &dst);
+int fetch(const char* cmd,const char* key,std::vector<T> &dst);
 
 };
 
 
 
-int Redis::fixKey(const std::string &cmd,const std::string &key){
-	int nRet = 0;
-	std::vector<string> command;
-	RedisResult DstResult;
-	command.push_back(cmd);
-	command.push_back(key);
-	nRet = this->query(command,DstResult);
-
-	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
-		return SUCCESS;
-	}
-	return ERR;
-}
-
-
-template<class T>
-int Redis::insertOne(const std::string &cmd,const std::string &key,T &insert){
-	int nRet = 0;
-	std::vector<string> command;
-	RedisResult DstResult;
-	command.push_back(cmd);
-	command.push_back(key);
-	command.push_back(string(reinterpret_cast<char *>(&insert),sizeof(T)));
-	nRet = this->query(command,DstResult);
-
-	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
-		return SUCCESS;
-	}
-	return ERR;
-}
-
-
-template<class T>
-int Redis::insertSet(const std::string &cmd,const std::string &key,std::set<T> &insert){
-	int nRet = 0;
-	std::vector<string> command;
-	RedisResult DstResult;
-	command.push_back(cmd);
-	command.push_back(key);
-	typedef typename std::set<T>::iterator ct_iter;
+int Redis::Command(const char* Command){
 	
-	for(ct_iter iter = insert.begin();iter != insert.end();++iter ){
-		command.push_back(string( reinterpret_cast<const char*>( &(*iter) ),sizeof(T) ));
-	}
+	int nRet = 0;
+	std::vector<string> command;
+	RedisResult DstResult;
+	command.push_back(string(Command));
 
-	nRet = this->query(command,DstResult);
+	nRet = this->query(RedisCommand::queryNoBinary,command,DstResult);
+
+	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
+		return SUCCESS;
+	}
+	return ERR;
+}
+
+int Redis::Command(std::vector<string> &Command){
+	
+	int nRet = 0;
+	RedisResult DstResult;
+
+	nRet = this->query(RedisCommand::queryCommand,Command,DstResult);
 
 	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
 		return SUCCESS;
@@ -86,13 +66,29 @@ int Redis::insertSet(const std::string &cmd,const std::string &key,std::set<T> &
 
 
 template<class T>
-int Redis::fetchOne(const std::string &cmd,const std::string &key,T &dst){
+int Redis::insert(const char* cmd,const char* key,T &insert){
 	int nRet = 0;
 	std::vector<string> command;
 	RedisResult DstResult;
-	command.push_back(cmd);
-	command.push_back(key);
-	nRet = this->query(command,DstResult);
+	command.push_back(string(cmd));
+	command.push_back(string(key));
+	command.push_back(string(reinterpret_cast<char *>(&insert),sizeof(T)));
+	nRet = this->query(RedisCommand::queryCommand,command,DstResult);
+
+	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
+		return SUCCESS;
+	}
+	return ERR;
+}
+
+template<class T>
+int Redis::fetch(const char* cmd,const char* key,T &dst){
+	int nRet = 0;
+	std::vector<string> command;
+	RedisResult DstResult;
+	command.push_back(string(cmd));
+	command.push_back(string(key));
+	nRet = this->query(RedisCommand::queryCommand,command,DstResult);
 	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
 		if(REDIS_REPLY_NIL == DstResult.type){
 			return NIL;
@@ -105,14 +101,38 @@ int Redis::fetchOne(const std::string &cmd,const std::string &key,T &dst){
 	return ERR;
 }
 
+
 template<class T>
-int Redis::fetchSet(const std::string &cmd,const std::string &key,std::set<T> &dst){
+int Redis::insert(const char* cmd,const char* key,std::vector<T> &insert){
 	int nRet = 0;
 	std::vector<string> command;
 	RedisResult DstResult;
-	command.push_back(cmd);
-	command.push_back(key);
-	nRet = this->query(command,DstResult);
+	command.push_back(string(cmd));
+	command.push_back(string(key));
+	typedef typename std::vector<T>::iterator ct_iter;
+	
+	for(ct_iter iter = insert.begin();iter != insert.end();++iter ){
+		command.push_back(string( reinterpret_cast<const char*>( &(*iter) ),sizeof(T) ));
+	}
+
+	nRet = this->query(RedisCommand::queryCommand,command,DstResult);
+
+	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
+		return SUCCESS;
+	}
+	return ERR;
+}
+
+
+
+template<class T>
+int Redis::fetch(const char* cmd,const char* key,std::vector<T> &dst){
+	int nRet = 0;
+	std::vector<string> command;
+	RedisResult DstResult;
+	command.push_back(string(cmd));
+	command.push_back(string(key));
+	nRet = this->query(RedisCommand::queryCommand,command,DstResult);
 	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
 		if(REDIS_REPLY_NIL == DstResult.type){
 			return NIL;
@@ -125,7 +145,7 @@ int Redis::fetchSet(const std::string &cmd,const std::string &key,std::set<T> &d
 				}
 				T tobj;
 				memcpy(&tobj,tmp.binary.data(),tmp.binary.size());
-				dst.insert(tobj);
+				dst.push_back(tobj);
 			}
 			return SUCCESS;
 		}

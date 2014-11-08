@@ -32,15 +32,15 @@ int RedisManager::initialize(int args,...){
 };
 
 
-int RedisManager::query(std::vector<std::string> &command,RedisResult &DstResult){
+int RedisManager::query(redisQueryFun queryFun,std::vector<std::string> &command,RedisResult &DstResult){
 	int nRet = 0;
-	nRet = RedisCommand::queryCommand(this->_conn.GetContext(),command,&DstResult);
+	nRet = queryFun(this->_conn.GetContext(),command,&DstResult);
 	//如果是服务器连接断开则重新连接
 	if(REDIS_CONTEXT_NULL == nRet  || REDIS_RESULT_NULL == nRet || (REDIS_RESULT_ERROR == nRet && REDIS_ERR_EOF == DstResult.type)){
 		nRet = this->_reConnect();
 		//连接成功则重新执行命令
 		if(REDIS_CONNECT_SUCCESS == nRet){
-			nRet = RedisCommand::queryCommand(this->_conn.GetContext(),command, &DstResult );
+			nRet = queryFun(this->_conn.GetContext(),command, &DstResult );
 		}
 	}
 	return nRet;

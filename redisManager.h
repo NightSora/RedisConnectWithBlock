@@ -11,7 +11,7 @@ public:
 	~RedisManager();
 	int initialize(int args,...);//可以输入多个rediscfg配置
 	//命令执行函数
-	int query(std::vector<std::string> &command,RedisResult &tdst); //执行任意字符串命令
+	int query(redisQueryFun queryFun,std::vector<std::string> &command,RedisResult &tdst); //执行任意字符串命令
 
 protected:
 	//重新连接

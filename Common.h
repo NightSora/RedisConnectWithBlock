@@ -20,3 +20,8 @@ extern "C"{
 #define REDIS_CONNECT_SUCCESS 0
 #define REDIS_CONNECT_NOTALLOC -10
 #define REDIS_CONNECT_ERR -20
+
+
+#define SUCCESS 0
+#define NIL 1
+#define ERR -1

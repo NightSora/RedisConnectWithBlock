@@ -45,3 +45,32 @@ int RedisManager::query(redisQueryFun queryFun,std::vector<std::string> &command
 	}
 	return nRet;
 }
+
+
+int RedisManager::Command(const char* Command){
+	
+	int nRet = 0;
+	std::vector<string> command;
+	RedisResult DstResult;
+	command.push_back(string(Command));
+
+	nRet = this->query(RedisCommand::queryNoBinary,command,DstResult);
+
+	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
+		return SUCCESS;
+	}
+	return ERR;
+}
+
+int RedisManager::Command(std::vector<string> &Command){
+	
+	int nRet = 0;
+	RedisResult DstResult;
+
+	nRet = this->query(RedisCommand::queryCommand,Command,DstResult);
+
+	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
+		return SUCCESS;
+	}
+	return ERR;
+}

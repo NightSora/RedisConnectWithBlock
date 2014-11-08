@@ -13,6 +13,9 @@ public:
 	//命令执行函数
 	int query(redisQueryFun queryFun,std::vector<std::string> &command,RedisResult &tdst); //执行任意字符串命令
 
+	int Command(const char* Command);
+	int Command(std::vector<string> &Command);
+
 protected:
 	//重新连接
 	inline int _reConnect();

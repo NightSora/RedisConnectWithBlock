@@ -17,9 +17,6 @@ public:
 Redis():RedisManager(){};
 ~Redis(){};
 
-int Command(const char* Command);
-int Command(std::vector<string> &Command);
-
 template<class T>
 int insert(const char* cmd,const char* key,T &insert);
 
@@ -33,36 +30,6 @@ template<class T>
 int fetch(const char* cmd,const char* key,std::vector<T> &dst);
 
 };
-
-
-
-int Redis::Command(const char* Command){
-	
-	int nRet = 0;
-	std::vector<string> command;
-	RedisResult DstResult;
-	command.push_back(string(Command));
-
-	nRet = this->query(RedisCommand::queryNoBinary,command,DstResult);
-
-	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
-		return SUCCESS;
-	}
-	return ERR;
-}
-
-int Redis::Command(std::vector<string> &Command){
-	
-	int nRet = 0;
-	RedisResult DstResult;
-
-	nRet = this->query(RedisCommand::queryCommand,Command,DstResult);
-
-	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
-		return SUCCESS;
-	}
-	return ERR;
-}
 
 
 template<class T>

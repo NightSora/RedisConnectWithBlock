@@ -37,6 +37,7 @@ int RedisCommand::queryCommand(redisContext *c,std::vector<std::string> &Command
 	if(NULL == reply){
 		if(0 != c->err){
 			//printf("redis Context Err %s",c->errstr);
+			//组合失败信息到返回引用结构体中
 			if(NULL != dst){
 				dst->binary=std::string(c->errstr);
 				dst->type = c->err;

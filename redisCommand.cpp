@@ -1,6 +1,7 @@
 #include "redisCommand.h"
 #include <string>
 #include <sstream>
+#include <string.h>
 
 using namespace std;
 
@@ -11,7 +12,11 @@ std::vector<std::string> string2eslpvector(const std::string& str){
 
 	int len = strlen(cstr);
 	for(int i=0;i<len;++i){
-		if(' ' == str[i]){
+		if(' ' == str[i] || len-1 == i){
+			if(len-1 == i){
+				ostr << str[i];
+			}
+
 			string cmd = ostr.str();
 			if(cmd.size() >0 ){
 				arr_cmds.push_back(cmd);

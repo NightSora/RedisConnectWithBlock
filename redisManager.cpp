@@ -52,7 +52,6 @@ int RedisManager::Command(const char* Command){
 	int nRet = 0;
 	std::vector<string> command=string2eslpvector(string(Command));
 	RedisResult DstResult;
-
 	nRet = this->query(command,DstResult);
 
 	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){

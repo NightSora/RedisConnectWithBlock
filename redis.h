@@ -40,7 +40,7 @@ int Redis::insert(const char* cmd,const char* key,T &insert){
 	command.push_back(string(cmd));
 	command.push_back(string(key));
 	command.push_back(string(reinterpret_cast<char *>(&insert),sizeof(T)));
-	nRet = this->query(RedisCommand::queryCommand,command,DstResult);
+	nRet = this->query(command,DstResult);
 
 	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
 		return SUCCESS;
@@ -55,7 +55,7 @@ int Redis::fetch(const char* cmd,const char* key,T &dst){
 	RedisResult DstResult;
 	command.push_back(string(cmd));
 	command.push_back(string(key));
-	nRet = this->query(RedisCommand::queryCommand,command,DstResult);
+	nRet = this->query(command,DstResult);
 	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
 		if(REDIS_REPLY_NIL == DstResult.type){
 			return NIL;
@@ -82,7 +82,7 @@ int Redis::insert(const char* cmd,const char* key,std::vector<T> &insert){
 		command.push_back(string( reinterpret_cast<const char*>( &(*iter) ),sizeof(T) ));
 	}
 
-	nRet = this->query(RedisCommand::queryCommand,command,DstResult);
+	nRet = this->query(command,DstResult);
 
 	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
 		return SUCCESS;
@@ -99,7 +99,7 @@ int Redis::fetch(const char* cmd,const char* key,std::vector<T> &dst){
 	RedisResult DstResult;
 	command.push_back(string(cmd));
 	command.push_back(string(key));
-	nRet = this->query(RedisCommand::queryCommand,command,DstResult);
+	nRet = this->query(command,DstResult);
 	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
 		if(REDIS_REPLY_NIL == DstResult.type){
 			return NIL;

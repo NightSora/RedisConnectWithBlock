@@ -32,15 +32,15 @@ int RedisManager::initialize(int args,...){
 };
 
 
-int RedisManager::query(redisQueryFun queryFun,std::vector<std::string> &command,RedisResult &DstResult){
+int RedisManager::query(std::vector<std::string> &command,RedisResult &DstResult){
 	int nRet = 0;
-	nRet = queryFun(this->_conn.GetContext(),command,&DstResult);
+	nRet = RedisCommand::queryCommand(this->_conn.GetContext(),command,&DstResult);
 	//如果是服务器连接断开则重新连接
 	if(REDIS_CONTEXT_NULL == nRet  || REDIS_RESULT_NULL == nRet || (REDIS_RESULT_ERROR == nRet && REDIS_ERR_EOF == DstResult.type)){
 		nRet = this->_reConnect();
 		//连接成功则重新执行命令
 		if(REDIS_CONNECT_SUCCESS == nRet){
-			nRet = queryFun(this->_conn.GetContext(),command, &DstResult );
+			nRet = RedisCommand::queryCommand(this->_conn.GetContext(),command, &DstResult );
 		}
 	}
 	return nRet;
@@ -50,11 +50,10 @@ int RedisManager::query(redisQueryFun queryFun,std::vector<std::string> &command
 int RedisManager::Command(const char* Command){
 	
 	int nRet = 0;
-	std::vector<string> command;
+	std::vector<string> command=string2eslpvector(string(Command));
 	RedisResult DstResult;
-	command.push_back(string(Command));
 
-	nRet = this->query(RedisCommand::queryNoBinary,command,DstResult);
+	nRet = this->query(command,DstResult);
 
 	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
 		return SUCCESS;
@@ -67,7 +66,7 @@ int RedisManager::Command(std::vector<string> &Command){
 	int nRet = 0;
 	RedisResult DstResult;
 
-	nRet = this->query(RedisCommand::queryCommand,Command,DstResult);
+	nRet = this->query(Command,DstResult);
 
 	if(REDIS_RESULT_SUCCESS == nRet && DstResult.type != REDIS_REPLY_ERROR){
 		return SUCCESS;

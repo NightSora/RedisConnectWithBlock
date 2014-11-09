@@ -33,8 +33,6 @@ class RedisCommand{
 public:
 	//执行redis命令，二进制安全,返回结构放在dst中
 	static int queryCommand(redisContext *c,std::vector<std::string> &Command,RedisResult *dst);
-	//执行redis命令，二进制不安全
-	static int queryNoBinary(redisContext *c,std::vector<std::string> &Command,RedisResult *dst);
 private:
 	//将redisReply组合成redisResult
 	static void ComplexResult(const redisReply* reply,RedisResult &dst);
@@ -42,5 +40,4 @@ private:
 };
 
 
-//定义函数指针类型redisQueryFun ##同步执行redis查询方法类型
-typedef int(*redisQueryFun)(redisContext*,std::vector<std::string> &,RedisResult*);
+std::vector<std::string> string2eslpvector(const std::string& str);
